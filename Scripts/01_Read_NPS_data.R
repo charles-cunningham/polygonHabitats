@@ -20,7 +20,7 @@ library(sf)
 minArea <- 4000 # Units = m^2
 
 # Set token here
-token <- ""
+token <- "*****"
 
 ### DATA MANAGEMENT ------------------------------------------------------------
 
@@ -117,5 +117,6 @@ saveRDS(NPS_complete, paste0(dataDir, "NPS_data/NPS_polygons.Rds"))
 
 ### REMOVE FILES NO LONGER NEEDED --------------------------------------------
 
+# Remove raw donloaded files; takes up memory unnecessarily
 unlink(paste0(dataDir, "NPS_data/Raw"), recursive = TRUE)
 gc()
