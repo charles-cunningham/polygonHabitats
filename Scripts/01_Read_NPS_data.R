@@ -110,12 +110,9 @@ for(i in 0:9) {
 ### SAVE COMBINED POLYGONS -----------------------------------------------------
 
 # Save in NPS_data directory
-st_write(NPS_complete,
-         paste0(dataDir, "NPS_data/NPS_polygons.gpkg"),
-         layer_options = "OVERWRITE=true")
 saveRDS(NPS_complete, paste0(dataDir, "NPS_data/NPS_polygons.Rds"))
 
-### REMOVE FILES NO LONGER NEEDED --------------------------------------------
+### REMOVE FILES NO LONGER NEEDED ----------------------------------------------
 
 # Remove raw donloaded files; takes up memory unnecessarily
 unlink(paste0(dataDir, "NPS_data/Raw"), recursive = TRUE)
