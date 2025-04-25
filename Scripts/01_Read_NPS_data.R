@@ -17,7 +17,7 @@ library(sf)
 ### SET PARAMETERS -------------------------------------------------------------
 
 # Set minimum area cutoff for filtering NPS polygons
-minArea <- 4000 # Units = m^2
+minArea <- 10000 # Units = m^2
 
 # Set token here
 token <- "*****"
