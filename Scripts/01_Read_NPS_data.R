@@ -4,8 +4,12 @@
 # 
 # Script Name: Read in Land Registry National Polygon Service (NPS) Polygons
 #
-# Script Description: Reads in the NPS data, then filters above a minimum area,
-# and binds them together into a single spatial object
+# Script Description: Reads in the NPS data (which comprises several parts which
+# cannot all be read in at the same time due to large memory requirements), 
+# then create a data frame of polygon title numbers and area. This is used to 
+# filter title numbers (which can comprise of multiple polygons across different
+# part of the NPS polygon data). The filtered title numbers are used to select 
+# polygons from different parts, which are then merged together and saved
 
 ### LOAD LIBRARIES -------------------------------------------------------------
 
@@ -17,7 +21,7 @@ library(sf)
 ### SET PARAMETERS -------------------------------------------------------------
 
 # Set minimum area cutoff for filtering NPS polygons
-minArea <- 10000 # Units = m^2
+minArea <- 4000 # Units = m^2
 
 # Set token here
 token <- "*****"
@@ -32,7 +36,7 @@ if (!file.exists(paste0(dataDir, "NPS_data/Raw"))) {
   dir.create(paste0(dataDir, "NPS_data/Raw"), recursive = TRUE)
 }
 
-### CONNECT TO LAND REGISTRY DATA -------------------------------------------------------
+### CONNECT TO LAND REGISTRY DATA ----------------------------------------------
 
 # Set system variables
 Sys.setenv(DATABRICKS_TOKEN = token)
@@ -72,7 +76,50 @@ lapply(NPS_files, function(x) {
                  )
 })
 
+### CREATE MERGED NPS TIBBLE WITH POLY_ID, TITLE_NO AND AREA COLUMNS -----------
+
+# Create empty tibble
+NPS_df <- tibble()
+
+# For every NPS shapefile...
+for(i in 0:9) {
+
+  # Print update
+  print(paste("Processing part", i))
+  
+  # Read in shapefile
+  NPS_part <- paste0(
+    "/dbfs/mnt/lab/unrestricted/charles.cunningham@defra.gov.uk/LandRegistry/NPS_data/Raw/LR_POLY_FULL_MAY_2024_",
+    i,
+    ".shp") %>%
+    st_read(., quiet = TRUE)
+  
+  # Add polygon area column
+  NPS_part$AREA <- st_area(NPS_part) 
+  
+  # Convert NPS_part to tibble with only POLY_ID, TITLE_NO, and AREA columns
+  NPS_part_df <- NPS_part %>%
+    as_tibble() %>%
+    select(POLY_ID, TITLE_NO, AREA)
+  
+  # Add rows to cumulative NPS tibble
+  NPS_df <- rbind(NPS_df, NPS_part_df)
+}
+
+# Garbage clean
+rm(NPS_part, NPS_part_df)
+gc()
+
 ### FILTER POLYGONS ABOVE CERTAIN AREA -----------------------------------------
+
+# Create filtered vector of title numbers
+titleFilt <- NPS_df %>%
+  group_by(TITLE_NO) %>% # Group polygons to title numbers
+  filter(as.numeric(AREA) >= minArea) %>% # Filter above minimum area
+  ungroup() %>% # Ungroup back
+  .[["TITLE_NO"]] # Select title numbers as vector
+
+### CREATE MERGED, FILTERED NPS POLYGONS ---------------------------------------
 
 # For every NPS shapefile...
 for(i in 0:9) {
@@ -87,12 +134,12 @@ for(i in 0:9) {
     ".shp") %>%
     st_read(., quiet = TRUE)
 
-  # Add polygon area column
-  NPS_part$area <- st_area(NPS_part) 
-
-  # Filter out small polygons below set minimum area
+  # Filter out polygons which belong to title numbers falling below minimum area
   NPS_part <- NPS_part %>%
-    filter(as.numeric(area) >= minArea)
+    filter(TITLE_NO %in% titleFilt)
+  
+  # Add polygon area column
+  NPS_part$AREA <- st_area(NPS_part) 
   
   # If first iteration, set the combined dataset to NPS_part
   if (i == 0) { 
@@ -114,6 +161,6 @@ saveRDS(NPS_complete, paste0(dataDir, "NPS_data/NPS_polygons.Rds"))
 
 ### REMOVE FILES NO LONGER NEEDED ----------------------------------------------
 
-# Remove raw donloaded files; takes up memory unnecessarily
+# Remove raw downloaded files; takes up memory unnecessarily
 unlink(paste0(dataDir, "NPS_data/Raw"), recursive = TRUE)
 gc()
