@@ -132,22 +132,22 @@ for(i in 0:9) {
     "/dbfs/mnt/lab/unrestricted/charles.cunningham@defra.gov.uk/LandRegistry/NPS_data/Raw/LR_POLY_FULL_MAY_2024_",
     i,
     ".shp") %>%
-    st_read(., quiet = TRUE)
+    st_read(., quiet = TRUE) %>%
+    select(!c(INSERT, UPDATE, REC_STATUS )) # Drop columns not needed
 
-  # Filter out polygons which belong to title numbers falling below minimum area
-  NPS_part <- NPS_part %>%
-    filter(TITLE_NO %in% titleFilt)
+  # Filter out polygons which belong to title numbers below minimum area
+  NPS_part <- filter(NPS_part, TITLE_NO %in% titleFilt)
   
   # Add polygon area column
   NPS_part$AREA <- st_area(NPS_part) 
   
-  # If first iteration, set the combined dataset to NPS_part
+  # If first iteration... 
   if (i == 0) { 
     
-    NPS_complete <- NPS_part 
-     
-    # Else... 
-    } else {
+    # Set the combined dataset to NPS_part
+    NPS_complete <- NPS_part
+    
+    } else { # Else...
      
       # Use rbind to join current NPS_part to complete file
       NPS_complete <- rbind(NPS_complete, NPS_part)
