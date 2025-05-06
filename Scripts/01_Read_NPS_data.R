@@ -61,7 +61,7 @@ shapefileExt <- c(".dbf",
 # N.B. The NPS data is saved as 10 different shapefiles (due to large size) with 
 # '_0' to '_9' suffixes
 NPS_files <- paste0(NPS_directory,
-                    "LR_POLY_FULL_APR_2025_",
+                    "LR_POLY_FULL_APR_2025_", # Will need to update this
                     rep(0:9, each = length(shapefileExt)),
                     shapefileExt)
 
@@ -81,18 +81,20 @@ lapply(NPS_files, function(x) {
 # Create empty tibble
 NPS_df <- tibble()
 
+# List NPS shapefile parts
+NPS_shp <- list.files(paste0(dataDir, "NPS_data/Raw/"),
+                      ignore.case = TRUE,
+                      pattern = "\\.shp$",
+                      full.names = TRUE)
+
 # For every NPS shapefile...
-for(i in 0:9) {
+for(i in NPS_shp) {
 
   # Print update
-  print(paste("Processing part", i))
-  
+  print(paste("Processing:\n", i))
+
   # Read in shapefile
-  NPS_part <- paste0(
-    "/dbfs/mnt/lab/unrestricted/charles.cunningham@defra.gov.uk/LandRegistry/NPS_data/Raw/LR_POLY_FULL_MAY_2024_",
-    i,
-    ".shp") %>%
-    st_read(., quiet = TRUE)
+  NPS_part <- st_read(i, quiet = TRUE)
   
   # Add polygon area column
   NPS_part$AREA <- st_area(NPS_part) 
@@ -122,17 +124,13 @@ titleFilt <- NPS_df %>%
 ### CREATE MERGED, FILTERED NPS POLYGONS ---------------------------------------
 
 # For every NPS shapefile...
-for(i in 0:9) {
+for(i in NPS_shp) {
   
   # Print update
-  print(paste("Processing part", i))
+  print(paste("Processing:\n", i))
   
   # Read in shapefile
-  NPS_part <- paste0(
-    "/dbfs/mnt/lab/unrestricted/charles.cunningham@defra.gov.uk/LandRegistry/NPS_data/Raw/LR_POLY_FULL_MAY_2024_",
-    i,
-    ".shp") %>%
-    st_read(., quiet = TRUE) %>%
+  NPS_part <- st_read(i, quiet = TRUE) %>%
     select(!c(INSERT, UPDATE, REC_STATUS )) # Drop columns not needed
 
   # Filter out polygons which belong to title numbers below minimum area
@@ -142,8 +140,8 @@ for(i in 0:9) {
   NPS_part$AREA <- st_area(NPS_part) 
   
   # If first iteration... 
-  if (i == 0) { 
-    
+  if ( grepl("_0.shp", i) ) { 
+
     # Set the combined dataset to NPS_part
     NPS_complete <- NPS_part
     
