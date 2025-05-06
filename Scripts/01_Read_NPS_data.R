@@ -61,7 +61,7 @@ shapefileExt <- c(".dbf",
 # N.B. The NPS data is saved as 10 different shapefiles (due to large size) with 
 # '_0' to '_9' suffixes
 NPS_files <- paste0(NPS_directory,
-                    "LR_POLY_FULL_MAY_2024_",
+                    "LR_POLY_FULL_APR_2025_",
                     rep(0:9, each = length(shapefileExt)),
                     shapefileExt)
 
