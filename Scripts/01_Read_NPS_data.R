@@ -6,10 +6,10 @@
 #
 # Script Description: Reads in the NPS data (which comprises several parts which
 # cannot all be read in at the same time due to large memory requirements), 
-# then create a data frame of polygon title numbers and area. This is used to 
+# then create a data frame containing title number area. This is used to 
 # filter title numbers (which can comprise of multiple polygons across different
 # part of the NPS polygon data). The filtered title numbers are used to select 
-# polygons from different parts, which are then merged together and saved
+# polygons from different parts, which are then merged together and saved.
 
 ### LOAD LIBRARIES -------------------------------------------------------------
 
@@ -125,7 +125,7 @@ titleFilt <- NPS_df %>%
   filter(TITLE_AREA >= minArea) %>% # Filter above minimum area
   .[["TITLE_NO"]] # Select title numbers as vector
 
-### CREATE MERGED, FILTERED NPS POLYGONS ---------------------------------------
+### FILTER AND MERGE NPS POLYGONS ----------------------------------------------
 
 # For every NPS shapefile...
 for(i in NPS_shp) {
