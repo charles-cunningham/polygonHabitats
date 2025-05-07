@@ -98,22 +98,31 @@ NPS_data <- readRDS(paste0(dataDir,
                            "NPS_data/NPS_polygons.Rds"))
 
 # Create data frame from NPS_data
-# N.B Assigning values using this tibble speeds up significantly later
-landNPS_data <-  matrix(ncol = length(classLCM),
-                        nrow = NROW(NPS_data)) %>%
+# N.B Assigning values using this tibble speeds up significantly later. Columns
+# are LCM classes and rows are title numbers
+titleLCM_df <-  matrix(
+  ncol = length(classLCM),
+  nrow = unique(NPS_data$TITLE_NO) %>% length()
+  ) %>%
   data.frame() %>%
   setNames(., classLCM)
 
 # Add total area column (25x25m cell count) to populate
-landNPS_data[, "totalArea"] <- NA
+titleLCM_df[, "totalArea_25m2"] <- NA
 
-# Add in POLY_ID,  TITLE_NO, and area in m^2
-landNPS_data[, "POLY_ID"] <- NPS_data$POLY_ID
-landNPS_data[, "TITLE_NO"] <- NPS_data$TITLE_NO
-landNPS_data[, "area_m2"] <- NPS_data$area
+# Add in title numbers
+titleLCM_df[, "TITLE_NO"] <- unique(NPS_data$TITLE_NO)
+
+# Add in area associated with titles (in m2)
+titleLCM_df <- as_tibble(NPS_data) %>% # Convert NPS_data to tibble
+  select(TITLE_NO, TITLE_AREA) %>% # Select only TITLE_NO and TITLE_AREA columns
+  distinct() %>% # Only keep unique rows (so every row is a title not polygon)
+  left_join(titleLCM_df, # Join to new data frame using TITLE_NO
+            .,
+            by = "TITLE_NO")
 
 # Find columns that match to LCM classes
-colNumsLCM <- names(landNPS_data) %in% classLCM %>%
+colNumsLCM <- names(titleLCM_df) %in% classLCM %>%
   which(.)
 
 # EXTRACT COVERAGE (IN 25x25M CELLS) -------------------------------------------
@@ -126,39 +135,42 @@ progressBar = txtProgressBar(
   style = 3
 )
 
-  # Start loop iterating through every landNPS_data row
-  for (i in 1:NROW(landNPS_data)) { # (Same row numbers as NPS_data)
-    
-    # Extract all 25x25m cells for each land cover class present for NPS polygon i
-    # N.B. This is how rows are connected
-    polygonCells <- terra::extract(lcm2023, NPS_data[i,])
-    
-    # Count number of cells for each class
-    # N.B. some classes may not be included as count is 0
-    polygonCount <- count(polygonCells, Identifier, name = "Cover")
-    
-    # Add class names by joining coverage values to LCM data frame
-    polygonCount <- left_join(LCM_df, polygonCount, by = "Identifier") %>%
-      replace_na(list(Cover = 0)) # Convert 'Cover' NAs to 0
-    
-    # Add cell coverage for each class to landNPS_data (row i)
-    landNPS_data[i, colNumsLCM] <- polygonCount$Cover
-    
-    # Add total number of cells
-    landNPS_data[i, "totalArea"] <- sum(polygonCount$Cover)
-    
-    # Add main cover
-    landNPS_data[i, "MainCover"] <- classLCM[max.col(landNPS_data[i, colNumsLCM],
-                                                     ties.method="first")]
-    
-    # Add cover proportion
-    landNPS_data[i, "MainPercent"] <- ( max(landNPS_data[i, colNumsLCM]) /
-                                          landNPS_data[i, "totalArea"] ) * 100
-    
-    # Iterate progress bar
-    setTxtProgressBar(progressBar, i)
-    
-  }
+# Start loop iterating through every titleLCM_df row (every title number)
+for (i in 1:NROW(titleLCM_df)) {
+  
+  # Select title number polygons
+  titlePolygons <- NPS_data %>%
+    filter(TITLE_NO == titleLCM_df[i, "TITLE_NO"])
+  
+  # Extract all 25x25m cells for each land cover class present for title i
+  titleCells <- terra::extract(lcm2023, titlePolygons, ID = FALSE)
+  
+  # Count number of cells for each class
+  # N.B. some classes may not be included as count is 0
+  titleCount <- count(titleCells, Identifier, name = "Cover")
+  
+  # Add class names by joining coverage values to LCM data frame
+  titleCount <-
+    left_join(LCM_df, titleCount, by = "Identifier") %>%
+    replace_na(list(Cover = 0)) # Convert 'Cover' NAs to 0
+  
+  # Add total number of cells
+  titleLCM_df[i, "totalArea_25m2"] <- sum(titleCount$Cover)
+  
+  # Add cell coverage for each class to titleLCM_df (row i)
+  titleLCM_df[i, colNumsLCM] <- (titleCount$Cover /
+                                   titleLCM_df[i, "totalArea_25m2"]) * 100
+  
+  # Add main cover
+  titleLCM_df[i, "MainCover"] <- classLCM[max.col(titleLCM_df[i, colNumsLCM],
+                                                  ties.method = "first")]
+  
+  # Add max cover proportion
+  titleLCM_df[i, "MainPercent"] <- max(titleLCM_df[i, colNumsLCM])
+  
+  # Iterate progress bar
+  setTxtProgressBar(progressBar, i)
+}
 
 # Close progress bar
 close(progressBar)
@@ -166,6 +178,6 @@ close(progressBar)
 ### SAVE -----------------------------------------------------------------------
 
 # Save
-saveRDS(landNPS_data,
+saveRDS(titleLCM_df,
         file = paste0(dataDir,
-                      "polygon_land_data.Rds"))
+                      "title_LCM_data.Rds"))
