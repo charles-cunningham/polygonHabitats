@@ -97,12 +97,12 @@ for(i in NPS_shp) {
   NPS_part <- st_read(i, quiet = TRUE)
   
   # Add polygon area column
-  NPS_part$AREA <- st_area(NPS_part) 
+  NPS_part$POLY_AREA <- st_area(NPS_part) 
   
-  # Convert NPS_part to tibble with only POLY_ID, TITLE_NO, and AREA columns
+  # Convert NPS_part to tibble with POLY_ID, TITLE_NO, and POLY_AREA columns
   NPS_part_df <- NPS_part %>%
     as_tibble() %>%
-    select(POLY_ID, TITLE_NO, AREA)
+    select(POLY_ID, TITLE_NO, POLY_AREA)
   
   # Add rows to cumulative NPS tibble
   NPS_df <- rbind(NPS_df, NPS_part_df)
@@ -112,13 +112,17 @@ for(i in NPS_shp) {
 rm(NPS_part, NPS_part_df)
 gc()
 
-### FILTER POLYGONS ABOVE CERTAIN AREA -----------------------------------------
+### CALCULATE AREA BY TITLE NUMBER AND FILTER ----------------------------------
+
+# Create title number area column
+NPS_df <- NPS_df %>%
+  group_by(TITLE_NO) %>% # Group polygons to title numbers
+  mutate(TITLE_AREA = as.numeric(POLY_AREA) %>% sum()) %>% # Sum polygons for each title number
+  ungroup() # Ungroup back
 
 # Create filtered vector of title numbers
 titleFilt <- NPS_df %>%
-  group_by(TITLE_NO) %>% # Group polygons to title numbers
-  filter(as.numeric(AREA) >= minArea) %>% # Filter above minimum area
-  ungroup() %>% # Ungroup back
+  filter(TITLE_AREA >= minArea) %>% # Filter above minimum area
   .[["TITLE_NO"]] # Select title numbers as vector
 
 ### CREATE MERGED, FILTERED NPS POLYGONS ---------------------------------------
@@ -136,8 +140,9 @@ for(i in NPS_shp) {
   # Filter out polygons which belong to title numbers below minimum area
   NPS_part <- filter(NPS_part, TITLE_NO %in% titleFilt)
   
-  # Add polygon area column
-  NPS_part$AREA <- st_area(NPS_part) 
+  # Add polygon area and title number area from NPS_df
+  NPS_part <- left_join(NPS_part, NPS_df,
+                        by = c("POLY_ID" , "TITLE_NO"))
   
   # If first iteration... 
   if ( grepl("_0.shp", i) ) { 
