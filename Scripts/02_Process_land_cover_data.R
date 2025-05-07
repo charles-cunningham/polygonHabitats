@@ -4,7 +4,8 @@
 # 
 # Script Name: Process land cover data
 #
-# Script Description: Takes 1 week to run
+# Script Description: For each title number, this script extract the land cover
+# using the 2023 land cover map for each of the 21 land cover classes.
 
 ### LOAD LIBRARIES -------------------------------------------------------------
 
