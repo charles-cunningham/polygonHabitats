@@ -82,7 +82,7 @@ lapply(NPS_files, function(x) {
 NPS_df <- tibble()
 
 # List NPS shapefile parts
-NPS_shp <- list.files(paste0(dataDir, "NPS_data/Raw/"),
+NPS_shp <- list.files(paste0(dataDir, "NPS_data/Raw"),
                       ignore.case = TRUE,
                       pattern = "\\.shp$",
                       full.names = TRUE)
@@ -91,7 +91,7 @@ NPS_shp <- list.files(paste0(dataDir, "NPS_data/Raw/"),
 for(i in NPS_shp) {
 
   # Print update
-  print(paste("Processing:\n", i))
+  print(paste("Processing:", basename(i)))
 
   # Read in shapefile
   NPS_part <- st_read(i, quiet = TRUE)
@@ -127,7 +127,7 @@ titleFilt <- NPS_df %>%
 for(i in NPS_shp) {
   
   # Print update
-  print(paste("Processing:\n", i))
+  print(paste("Processing:", basename(i)))
   
   # Read in shapefile
   NPS_part <- st_read(i, quiet = TRUE) %>%
