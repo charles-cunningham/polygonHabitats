@@ -53,7 +53,7 @@ if (!file.exists(LCM_dir)) {
 # identifiers (from Table 1, page 5 of the Product Documentation for 
 # the 2023 land cover map). Name this LCM_classes.csv and save in LCM_dir.
 
-### READ IN NPS AND LAND COVER DATA --------------------------------------
+### READ IN NPS AND LAND COVER DATA --------------------------------------------
 
 ### READ IN LAND COVER DATA
 
