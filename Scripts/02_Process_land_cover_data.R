@@ -48,6 +48,11 @@ if (!file.exists(LCM_dir)) {
 # (iii) Converted to flat structure (i.e. contents of all directories moved to 
 # 'LCM_dir' and empty directories removed)
 
+# Also create a table in .csv format which shows the UKCEH Aggregate classes, 
+# UK BAP Broad Habitats, UKCEH Land Cover class and associated integer 
+# identifiers (from Table 1, page 5 of the Product Documentation for 
+# the 2023 land cover map). Name this LCM_classes.csv and save in LCM_dir.
+
 ### READ IN NPS AND LAND COVER DATA --------------------------------------
 
 ### READ IN LAND COVER DATA
@@ -62,35 +67,16 @@ names(lcm2023) <- "Identifier"
 # Optional: Read spatRast to memory (speeds up later extraction)
 lcm2023 <- toMemory(lcm2023)
 
-# Specify the LCM classes (ignore '0's which are marine cells)
-classLCM <- c(
-  "Deciduous woodland",
-  "Coniferous woodland",
-  "Arable",
-  "Improved grassland",
-  "Neutral grassland",
-  "Calcareous grassland",
-  "Acid grassland",
-  "Fen",
-  "Heather",
-  "Heather grassland",
-  "Bog",
-  "Inland rock",
-  "Saltwater",
-  "Freshwater",
-  "Supralittoral rock",
-  "Supralittoral sediment",
-  "Littoral rock",
-  "Littoral sediment",
-  "Saltmarsh",
-  "Urban",
-  "Suburban"
-)
+### READ IN LAND COVER CLASSES
+
+# Read in LCM classes
+classLCM <- paste0(LCM_dir, "LCM_classes.csv") %>%
+  read.csv()
 
 # Create LCM identifier/class data frame
 # N.B. 'Marine' identifier is '0'
-LCM_df <- data.frame("Identifier" = 1:length(classLCM),
-                     "Class" = classLCM)
+LCM_df <- data.frame("Identifier" = classLCM$LC.Identifier %>% unique(),
+                     "Class" = classLCM$UKCEH.Land.Cover.Class %>% unique() )
 
 ### READ IN LAND REGISTRY POLYGON DATA
 
