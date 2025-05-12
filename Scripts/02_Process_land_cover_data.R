@@ -88,11 +88,11 @@ NPS_data <- readRDS(paste0(dataDir,
 # N.B Assigning values using this tibble speeds up significantly later. Columns
 # are LCM classes and rows are title numbers
 titleLCM_df <-  matrix(
-  ncol = length(classLCM),
+  ncol = NROW(LCM_df),
   nrow = unique(NPS_data$TITLE_NO) %>% length()
   ) %>%
   data.frame() %>%
-  setNames(., classLCM)
+  setNames(., LCM_df$Class)
 
 # Add total area column (25x25m cell count) to populate
 titleLCM_df[, "totalArea_25m2"] <- NA
@@ -109,7 +109,7 @@ titleLCM_df <- as_tibble(NPS_data) %>% # Convert NPS_data to tibble
             by = "TITLE_NO")
 
 # Find columns that match to LCM classes
-colNumsLCM <- names(titleLCM_df) %in% classLCM %>%
+colNumsLCM <- names(titleLCM_df) %in% LCM_df$Class %>%
   which(.)
 
 # EXTRACT COVERAGE (IN 25x25M CELLS) -------------------------------------------
@@ -149,8 +149,8 @@ for (i in 1:NROW(titleLCM_df)) {
                                    titleLCM_df[i, "totalArea_25m2"]) * 100
   
   # Add main cover
-  titleLCM_df[i, "MainCover"] <- classLCM[max.col(titleLCM_df[i, colNumsLCM],
-                                                  ties.method = "first")]
+  titleLCM_df[i, "MainCover"] <- LCM_df$Class[max.col(titleLCM_df[i, colNumsLCM],
+                                                      ties.method = "first")]
   
   # Add max cover proportion
   titleLCM_df[i, "MainPercent"] <- max(titleLCM_df[i, colNumsLCM])
