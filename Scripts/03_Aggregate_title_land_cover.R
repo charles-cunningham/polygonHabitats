@@ -71,7 +71,6 @@ titleLCM_df[, "agg_MainCover"] <- aggList[max.col(titleLCM_df[, aggColsAll],
 # Add max cover proportion
 titleLCM_df[, "agg_MainPercent"] <- apply(titleLCM_df[, aggColsAll], 1, max)
 
-
 ### SAVE -----------------------------------------------------------------------
 
 # Save as .Rds
@@ -83,4 +82,3 @@ saveRDS(titleLCM_df,
 write.csv(titleLCM_df,
         file = paste0(dataDir,
                       "title_agg_cover_data.csv"))
-
