@@ -82,3 +82,14 @@ saveRDS(titleLCM_df,
 write.csv(titleLCM_df,
         file = paste0(dataDir,
                       "title_agg_cover_data.csv"))
+
+### PLOT -----------------------------------------------------------------------
+
+# Simple histogram of area for each cover type
+ggplot(titleLCM_df, aes(TITLE_AREA, fill = agg_MainCover)) +
+  geom_histogram() +
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_continuous(trans='log10', labels = scales::comma) +
+  xlab("Area of title (m^2)") +
+  ylab("Count") +
+  scale_fill_discrete(name = "Majority land cover\n(aggregated)")
