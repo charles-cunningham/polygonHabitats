@@ -20,8 +20,6 @@ terraOptions(memfrac = 0.9)
 ### DATA MANAGEMENT ------------------------------------------------------------
 
 # Set data directory
-# If working on Databricks: "/dbfs/mnt/lab/unrestricted/charles.cunningham@defra.gov.uk/Pesticides/Data/"
-# If working locally: "../Data/"
 dataDir <- "/dbfs/mnt/lab/unrestricted/charles.cunningham@defra.gov.uk/LandRegistry/"
 
 # Set land cover map directory
