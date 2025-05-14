@@ -55,7 +55,7 @@ sampleSize <- function(N,
   # Apply finite population correction
   nAdj <- (N * n) / (n + N - 1)
 
-  # Round sample size up
+  # Conservatively round sample size up
   nAdj <- ceiling(nAdj)
   
   # Return
@@ -67,11 +67,41 @@ sampleSize <- function(N,
 coverSample$SampleSize <- sampleSize(N = coverSample$Count,
                                      Z = 1.96, p = 0.5, MOE = 0.05)
 
-# Calculate every
-coverSample$SelectN <- round(coverSample$Count / coverSample$SampleSize)
+# Calculate every nth row to select to reach the target sample size and
+# conservatively round down (more selected)
+coverSample$SelectN <- floor(coverSample$Count / coverSample$SampleSize)
 
 ### SAMPLE TITLE DEEDS ---------------------------------------------------------
 
+# Loop through each row in coverSample
+titleSample  <- lapply(1:NROW(coverSample), function(x) {
+  
+  # Filter titleLCM_df by agg_MainCover of row x
+  titleLCM_x <- titleLCM_df %>%
+    filter(agg_MainCover == coverSample$agg_MainCover[x])
+  
+  # Sort in ascending order
+  titleLCM_x <- titleLCM_x %>%
+    arrange(TITLE_AREA)
+  
+  # Select every nth row
+  titleLCM_x %>%
+    filter(row_number() %% coverSample$SelectN[x] == 1)
+  
+}) %>%
+  
+  # Join together
+  bind_rows()
+  
+### SAVE -----------------------------------------------------------------------
 
+# Save as .Rds
+saveRDS(titleSample,
+        file = paste0(dataDir,
+                      "title_sample_data.Rds"))
 
+# Save as .csv
+write.csv(titleSample,
+          file = paste0(dataDir,
+                        "title_sample_data.csv"))
 
