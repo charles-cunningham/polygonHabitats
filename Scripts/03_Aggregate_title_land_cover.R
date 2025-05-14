@@ -15,8 +15,6 @@ library(tidyverse)
 ### DATA MANAGEMENT ------------------------------------------------------------
 
 # Set data directory
-# If working on Databricks: "/dbfs/mnt/lab/unrestricted/charles.cunningham@defra.gov.uk/Pesticides/Data/"
-# If working locally: "../Data/"
 dataDir <- "/dbfs/mnt/lab/unrestricted/charles.cunningham@defra.gov.uk/LandRegistry/"
 
 ### READ IN DATA ---------------------------------------------------------------
@@ -93,3 +91,4 @@ ggplot(titleLCM_df, aes(TITLE_AREA, fill = agg_MainCover)) +
   xlab("Area of title (m^2)") +
   ylab("Count") +
   scale_fill_discrete(name = "Majority land cover\n(aggregated)")
+
