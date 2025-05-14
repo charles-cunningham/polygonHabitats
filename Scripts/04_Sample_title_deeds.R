@@ -4,7 +4,8 @@
 # 
 # Script Name: Sample title deeds
 #
-# Script Description:
+# Script Description: Calculate appropriate sampling size then select that 
+# number from title data frame using stratified sampling approach
 
 ### LOAD LIBRARIES -------------------------------------------------------------
 
@@ -14,8 +15,6 @@ library(tidyverse)
 ### DATA MANAGEMENT ------------------------------------------------------------
 
 # Set data directory
-# If working on Databricks: "/dbfs/mnt/lab/unrestricted/charles.cunningham@defra.gov.uk/Pesticides/Data/"
-# If working locally: "../Data/"
 dataDir <- "/dbfs/mnt/lab/unrestricted/charles.cunningham@defra.gov.uk/LandRegistry/"
 
 ### READ IN DATA ---------------------------------------------------------------
