@@ -46,13 +46,19 @@ sampleSize <- function(N,
                        # Set sample proportion [Default = 0.5]
                        p = 0.5,
                        # Set margin of error [Default = 5%]
-                       MOE = 0.05) {
+                       MOE = 0.05,
+                       # Set estimated response rate [Default = 50%]
+                       r = 0.5) {
   
   # Calculate sample size
   n <- ( Z^2 * p * (1 - p) )/(MOE^2)
   
   # Apply finite population correction
   nAdj <- (N * n) / (n + N - 1)
+  
+  # Apply response rate correction
+  # (adjust sample size upwards to reflect not all (of the sample will respond)
+  nAdj <- nAdj / r
 
   # Conservatively round sample size up
   nAdj <- ceiling(nAdj)
@@ -64,7 +70,7 @@ sampleSize <- function(N,
 
 # Use formula to calculate estimated necessary sample sizes for survey
 coverSample$SampleSize <- sampleSize(N = coverSample$Count,
-                                     Z = 1.96, p = 0.5, MOE = 0.05)
+                                     Z = 1.96, p = 0.5, MOE = 0.05, r = 0.5)
 
 # Calculate every nth row to select to reach the target sample size and
 # conservatively round down (more selected)
@@ -103,4 +109,3 @@ saveRDS(titleSample,
 write.csv(titleSample,
           file = paste0(dataDir,
                         "title_sample_data.csv"))
-
