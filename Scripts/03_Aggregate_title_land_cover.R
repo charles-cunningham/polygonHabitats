@@ -91,4 +91,3 @@ ggplot(titleLCM_df, aes(TITLE_AREA, fill = agg_MainCover)) +
   xlab("Area of title (m^2)") +
   ylab("Count") +
   scale_fill_discrete(name = "Majority land cover\n(aggregated)")
-
