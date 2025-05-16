@@ -103,7 +103,7 @@ lapply(NPS_files, function(x) {
                  )
 })
 
-### CREATE MERGED NPS TIBBLE WITH ADDED TIBBLE AREA & COUNTRY COLUMNS ----------
+### CREATE MERGED NPS TIBBLE WITH ADDED AREA COLUMN ----------------------------
 
 # Create empty tibble
 NPS_df <- tibble()
@@ -139,7 +139,7 @@ for(i in NPS_shp) {
 rm(NPS_part, NPS_part_df)
 gc()
 
-### CALCULATE AREA BY TITLE NUMBER AND FILTER ----------------------------------
+### CALCULATE AREA BY TITLE NUMBER AND CREATE VECTOR TO FILTER -----------------
 
 # Create summary of area by title
 NPS_df <- NPS_df %>%
