@@ -40,10 +40,10 @@ if (!file.exists(paste0(dataDir, "NPS_data/Raw"))) {
 ### DOWNLOAD COUNTRY BOUNDARY DATA [MANUAL] ------------------------------------
 
 # We use the Countries (December 2024) Boundaries UK BGC data from ONS
-# (Boundary, Super Generalised Clipped)
+# (Boundary, Generalised Clipped)
 
 # Information on data here, and can also download the .geojson file in Download tab:
-# https://geoportal.statistics.gov.uk/datasets/6f18dfc308d04372929dea6afa44b2c7_0/explore
+# https://geoportal.statistics.gov.uk/datasets/0139831c7166457ab1f7b3ab1f919cba_0/explore
 
 # Once downloaded, file is moved to dataDir
 
@@ -51,7 +51,7 @@ if (!file.exists(paste0(dataDir, "NPS_data/Raw"))) {
 
 # Read UK country boundaries
 boundaryUK <- paste0(dataDir,
-                     "Countries_December_2024_Boundaries_UK_BSC_-2880276037664496196.geojson") %>%
+                     "Countries_December_2024_Boundaries_UK_BGC_6159406507387171254.geojson") %>%
   read_sf(.) %>%
   .["CTRY24NM"] %>%
   st_transform(., crs = 27700)
@@ -188,6 +188,10 @@ for(i in NPS_shp) {
       NPS_complete <- rbind(NPS_complete, NPS_part)
     }
 }
+
+# Garbage clean
+rm(NPS_part)
+gc()
 
 ### FILTER BY LOCATION ---------------------------------------------------------
 
