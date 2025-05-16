@@ -60,6 +60,9 @@ boundaryUK <- paste0(dataDir,
 england <- filter(boundaryUK, CTRY24NM == "England")
 wales <- filter(boundaryUK, CTRY24NM == "Wales")
 
+# Remove redundant object
+rm(boundaryUK)
+
 ### CONNECT TO LAND REGISTRY DATA ----------------------------------------------
 
 # Set system variables
