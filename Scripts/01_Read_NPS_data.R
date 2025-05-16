@@ -75,6 +75,9 @@ NPS_directory <- "/Volumes/prd_dash_bronze/data_gov_hm_land_registry_restricted/
 
 ### DOWNLOAD LAND REGISTRY DATA ------------------------------------------------
 
+# See supporting information:
+# https://use-land-property-data.service.gov.uk/datasets/nps/tech-spec/1
+
 # Create list of file extensions that compose a standard shapefile
 shapefileExt <- c(".dbf",
                   ".prj",
