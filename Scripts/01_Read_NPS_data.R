@@ -141,7 +141,7 @@ gc()
 
 ### CALCULATE AREA BY TITLE NUMBER AND FILTER ----------------------------------
 
-# Create title summaries of area and suitable location
+# Create summary of area by title
 NPS_df <- NPS_df %>%
   # Group polygons to titles, so for every polygon for each title number...
   group_by(TITLE_NO) %>% 
@@ -197,7 +197,7 @@ NPS_complete$inEngland <- st_intersects(NPS_complete, england, sparse = FALSE)[,
 # Check if polygon is outside Wales (does not intersect)
 NPS_complete$outWales <- st_disjoint(NPS_complete, wales, sparse = FALSE)[,1]
 
-# Covert location logical columns from polygon to title scale
+# Covert location columns from polygon to title scale
 NPS_df <- NPS_df %>%
   # Group polygons to titles, so for every polygon for each title number...
   group_by(TITLE_NO) %>% 
@@ -208,6 +208,10 @@ NPS_df <- NPS_df %>%
 
 # Filter by location (intersects with England but outside Wales)
 NPS_complete <- filter(NPS_complete, TITLE_ENGLAND == TRUE)
+
+# Remove redundant location columns
+NPS_complete <- NPS_complete %>%
+  select(!c(inEngland, outWales, TITLE_ENGLAND))
 
 ### SAVE COMBINED POLYGONS -----------------------------------------------------
 
