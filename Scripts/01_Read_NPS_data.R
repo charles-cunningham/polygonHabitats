@@ -118,7 +118,7 @@ NPS_shp <- list.files(paste0(dataDir, "NPS_data/Raw"),
 for(i in NPS_shp) {
 
   # Print update
-  print(paste("Processing:", basename(i)))
+  print(paste("Creating tibble of", basename(i)))
 
   # Read in shapefile
   NPS_part <- read_sf(i)
@@ -126,16 +126,10 @@ for(i in NPS_shp) {
   # Add polygon area column
   NPS_part$POLY_AREA <- st_area(NPS_part)
   
-  # Check if polygon is within or touches England (intersects)
-  NPS_part$inEngland <- st_intersects(NPS_part, england, sparse = FALSE)[,1]
-  
-  # Check if polygon is outside Wales (does not intersect)
-  NPS_part$outWales <- st_disjoint(NPS_part, wales, sparse = FALSE)[,1]
-
   # Convert NPS_part to tibble with POLY_ID, TITLE_NO, and POLY_AREA columns
   NPS_part_df <- NPS_part %>%
     as_tibble() %>%
-    select(POLY_ID, TITLE_NO, POLY_AREA, inEngland, outWales)
+    select(POLY_ID, TITLE_NO, POLY_AREA)
   
   # Add rows to cumulative NPS tibble
   NPS_df <- rbind(NPS_df, NPS_part_df)
@@ -153,8 +147,6 @@ NPS_df <- NPS_df %>%
   group_by(TITLE_NO) %>% 
   # Sum polygon area
   mutate(TITLE_AREA = as.numeric(POLY_AREA) %>% sum()) %>% 
-  # Create column whether title number intersects with England and not Wales 
-  mutate(TITLE_ENGLAND = all(inEngland) & all(outWales)) %>%
   # Ungroup back
   ungroup()
 
@@ -162,8 +154,6 @@ NPS_df <- NPS_df %>%
 titleFilt <- NPS_df %>%
   # Filter above minimum area
   filter(TITLE_AREA >= minArea) %>%
-  # Filter location that intersects with England but outside Wales
-  filter(TITLE_ENGLAND == TRUE) %>%
   # Select title numbers as vector
   .[["TITLE_NO"]]
 
@@ -173,7 +163,7 @@ titleFilt <- NPS_df %>%
 for(i in NPS_shp) {
   
   # Print update
-  print(paste("Processing:", basename(i)))
+  print(paste("Filtering", basename(i)))
   
   # Read in shapefile
   NPS_part <- st_read(i, quiet = TRUE) %>%
@@ -198,6 +188,26 @@ for(i in NPS_shp) {
       NPS_complete <- rbind(NPS_complete, NPS_part)
     }
 }
+
+### FILTER BY LOCATION ---------------------------------------------------------
+
+# Check if polygon is within or touches England (intersects)
+NPS_complete$inEngland <- st_intersects(NPS_complete, england, sparse = FALSE)[,1]
+
+# Check if polygon is outside Wales (does not intersect)
+NPS_complete$outWales <- st_disjoint(NPS_complete, wales, sparse = FALSE)[,1]
+
+# Covert location logical columns from polygon to title scale
+NPS_df <- NPS_df %>%
+  # Group polygons to titles, so for every polygon for each title number...
+  group_by(TITLE_NO) %>% 
+  # Create column whether title number intersects with England and not Wales 
+  mutate(TITLE_ENGLAND = all(inEngland) & all(outWales)) %>%
+  # Ungroup back
+  ungroup()
+
+# Filter by location (intersects with England but outside Wales)
+NPS_complete <- filter(NPS_complete, TITLE_ENGLAND == TRUE)
 
 ### SAVE COMBINED POLYGONS -----------------------------------------------------
 
