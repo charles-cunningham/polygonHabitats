@@ -198,7 +198,7 @@ NPS_complete$inEngland <- st_intersects(NPS_complete, england, sparse = FALSE)[,
 NPS_complete$outWales <- st_disjoint(NPS_complete, wales, sparse = FALSE)[,1]
 
 # Covert location columns from polygon to title scale
-NPS_df <- NPS_df %>%
+NPS_complete <- NPS_complete %>%
   # Group polygons to titles, so for every polygon for each title number...
   group_by(TITLE_NO) %>% 
   # Create column whether title number intersects with England and not Wales 
