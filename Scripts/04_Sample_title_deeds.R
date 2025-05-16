@@ -100,11 +100,6 @@ titleSample  <- lapply(1:NROW(coverSample), function(x) {
   
 ### SAVE -----------------------------------------------------------------------
 
-# Save as .Rds
-saveRDS(titleSample,
-        file = paste0(dataDir,
-                      "title_sample_data.Rds"))
-
 # Save as .csv
 write.csv(titleSample,
           file = paste0(dataDir,
