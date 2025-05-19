@@ -115,7 +115,7 @@ colNumsLCM <- names(titleLCM_df) %in% LCM_df$Class %>%
 # Create progress bar
 progressBar = txtProgressBar(
   min = 0,
-  max = NROW(NPS_data),
+  max = NROW(titleLCM_df),
   initial = 0,
   style = 3
 )
